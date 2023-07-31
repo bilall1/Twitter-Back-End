@@ -37,6 +37,27 @@ func CreateUser(c *gin.Context) {
 	})
 }
 
+func GetUser(c *gin.Context) {
+
+	var body struct {
+		Email    string
+	}
+	c.Bind(&body)
+
+	var user models.User
+	result := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"user": user,
+	})
+
+}
+
 func ValidateUser(c *gin.Context) {
 
 	var body struct {

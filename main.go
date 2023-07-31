@@ -26,6 +26,7 @@ func main() {
 	r.Use(cors.New(corsConfig))
 
 	r.POST("/createUser", controllers.CreateUser)
+	r.POST("/getUser",controllers.GetUser)
 	r.POST("/postTweet", controllers.PostTweet)
 	r.POST("/getTweets", controllers.GetTweet)
 	r.POST("/validateUser", controllers.ValidateUser)

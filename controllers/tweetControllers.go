@@ -101,7 +101,7 @@ func GetFollowersTweet(c *gin.Context) {
 	itemsPerPage := 10
 
 	var body struct {
-		Email string
+		Id int
 		Page  int
 	}
 	c.Bind(&body)
@@ -109,16 +109,11 @@ func GetFollowersTweet(c *gin.Context) {
 	// Calculate the start and end index
 	startIndex := (body.Page - 1) * itemsPerPage
 
-	var user models.User
-	userobject := initializers.DB.Where("email = ?", body.Email).First(&user)
-	if userobject.Error != nil {
-		c.Status(400)
-		return
-	}
+	
 	var tweets []models.Tweet
 	result := initializers.DB.Table("tweets").
 		Joins("LEFT JOIN user_followers ON user_followers.follower_id = tweets.user_id").
-		Where("(user_followers.user_id = ?) OR (tweets.user_id = ?)", user.Id, user.Id).
+		Where("(user_followers.user_id = ?) OR (tweets.user_id = ?)", body.Id, body.Id).
 		Order("tweets.id desc").
 		Limit(itemsPerPage).
 		Offset(startIndex).
