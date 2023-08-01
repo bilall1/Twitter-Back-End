@@ -40,7 +40,7 @@ func CreateUser(c *gin.Context) {
 func GetUser(c *gin.Context) {
 
 	var body struct {
-		Email    string
+		Email string
 	}
 	c.Bind(&body)
 
@@ -83,22 +83,13 @@ func ValidateUser(c *gin.Context) {
 func GetPeopleToFollow(c *gin.Context) {
 
 	var body struct {
-		Email string
+		Id int
 	}
 	c.Bind(&body)
 
-	//Fetching User Id from Email
-	var user models.User
-	result := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
-
-	if result.Error != nil {
-		c.Status(400)
-		return
-	}
-
 	//Getting id's of people that appear in people you may know
 	var user_followers []int
-	result1 := initializers.DB.Raw("SELECT follower_id FROM user_followers WHERE user_id = ?", user.Id).Scan(&user_followers)
+	result1 := initializers.DB.Raw("SELECT follower_id FROM user_followers WHERE user_id = ?", body.Id).Scan(&user_followers)
 
 	if result1.Error != nil {
 		c.Status(400)
@@ -110,7 +101,7 @@ func GetPeopleToFollow(c *gin.Context) {
 	var users []models.User
 	if len(user_followers) > 0 {
 
-		user_followers = append(user_followers, user.Id)
+		user_followers = append(user_followers, body.Id)
 
 		result2 := initializers.DB.Not("id", user_followers).Find(&users)
 		if result2.Error != nil {
@@ -118,7 +109,7 @@ func GetPeopleToFollow(c *gin.Context) {
 			return
 		}
 	} else {
-		result2 := initializers.DB.Where("id != ?", user.Id).Find(&users)
+		result2 := initializers.DB.Where("id != ?", body.Id).Find(&users)
 		if result2.Error != nil {
 			c.Status(400)
 			return
@@ -142,21 +133,12 @@ func AddtofollowerList(c *gin.Context) {
 
 	var body struct {
 		Id         int
-		Email      string
+		UserId     int
 		FollowerID int
 	}
 	c.Bind(&body)
 
-	//Fetching User Id from Email
-	var user models.User
-	result := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
-
-	if result.Error != nil {
-		c.Status(400)
-		return
-	}
-
-	result1 := initializers.DB.Exec("INSERT INTO user_followers ( user_id, follower_id) VALUES (?, ?)", user.Id, body.FollowerID)
+	result1 := initializers.DB.Exec("INSERT INTO user_followers ( user_id, follower_id) VALUES (?, ?)", body.UserId, body.FollowerID)
 
 	if result1.Error != nil {
 		c.Status(400)
@@ -171,8 +153,8 @@ func AddtofollowerList(c *gin.Context) {
 func GetFollowing(c *gin.Context) {
 
 	var body struct {
-		Email string
-		Page  int
+		Id   int
+		Page int
 	}
 	c.Bind(&body)
 
@@ -180,19 +162,10 @@ func GetFollowing(c *gin.Context) {
 
 	startIndex := (body.Page - 1) * itemsPerPage
 
-	//Fetching User Id from Email
-	var user models.User
-	result := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
-
-	if result.Error != nil {
-		c.Status(400)
-		return
-	}
-
 	//Getting id's of people that appear in people you may know
 	var user_followers []int
 	query := fmt.Sprintf("SELECT follower_id FROM user_followers WHERE user_id = ? LIMIT %d OFFSET %d", itemsPerPage, startIndex)
-	result1 := initializers.DB.Raw(query, user.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
+	result1 := initializers.DB.Raw(query, body.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
 
 	if result1.Error != nil {
 		c.Status(400)
@@ -222,22 +195,13 @@ func GetFollowing(c *gin.Context) {
 func DeleteFollower(c *gin.Context) {
 
 	var body struct {
-		Email      string
+		UserId     int
 		FollowerId int
 	}
 	c.Bind(&body)
 
-	//Fetching User Id from Email
-	var user models.User
-	result := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
-
-	if result.Error != nil {
-		c.Status(400)
-		return
-	}
-
-	fmt.Println(user.Id, body.FollowerId)
-	initializers.DB.Exec("DELETE FROM user_followers where user_id= ? and follower_id = ?", user.Id, body.FollowerId)
+	fmt.Println(body.UserId, body.FollowerId)
+	initializers.DB.Exec("DELETE FROM user_followers where user_id= ? and follower_id = ?", body.UserId, body.FollowerId)
 
 	c.JSON(200, gin.H{
 		"Message": "Removed from Following",
@@ -248,8 +212,8 @@ func DeleteFollower(c *gin.Context) {
 func GetFollowers(c *gin.Context) {
 
 	var body struct {
-		Email string
-		Page  int
+		Id   int
+		Page int
 	}
 	c.Bind(&body)
 
@@ -257,19 +221,10 @@ func GetFollowers(c *gin.Context) {
 
 	startIndex := (body.Page - 1) * itemsPerPage
 
-	//Fetching User Id from Email
-	var user models.User
-	result := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
-
-	if result.Error != nil {
-		c.Status(400)
-		return
-	}
-
 	//Getting id's of people that appear in people you may know
 	var user_followers []int
 	query := fmt.Sprintf("SELECT user_id FROM user_followers WHERE follower_id = ? LIMIT %d OFFSET %d", itemsPerPage, startIndex)
-	result1 := initializers.DB.Raw(query, user.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
+	result1 := initializers.DB.Raw(query, body.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
 
 	if result1.Error != nil {
 		c.Status(400)
