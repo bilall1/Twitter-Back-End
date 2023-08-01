@@ -1,12 +1,9 @@
 package controllers
 
 import (
-	"log"
-
 	"github.com/bilall1/twitter-backend/initializers"
 	"github.com/bilall1/twitter-backend/models"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	// PostgreSQL driver
 )
 
@@ -23,29 +20,21 @@ type tweetData struct {
 func PostTweet(c *gin.Context) {
 
 	var body struct {
-		Email   string
+		Id      int
 		Content string
 	}
 	c.Bind(&body)
 
-	var user models.User
-	result := initializers.DB.Where("email = ?", body.Email).First(&user)
-	if result.Error != nil && result.Error != gorm.ErrRecordNotFound {
-		log.Fatal("Error checking email existence:", result.Error)
-	} else {
+	tweet := models.Tweet{Content: body.Content, UserId: body.Id, Id: 0}
 
-		tweet := models.Tweet{Content: body.Content, UserId: user.Id, Id: 0}
+	result := initializers.DB.Create(&tweet)
 
-		result := initializers.DB.Create(&tweet)
-
-		if result.Error != nil {
-			c.Status(400)
-			return
-		}
-
+	if result.Error != nil {
+		c.Status(400)
+		return
 	}
 
-	c.JSON(200, user)
+	c.JSON(200, "Tweet Posted")
 
 }
 
@@ -101,15 +90,14 @@ func GetFollowersTweet(c *gin.Context) {
 	itemsPerPage := 10
 
 	var body struct {
-		Id int
-		Page  int
+		Id   int
+		Page int
 	}
 	c.Bind(&body)
 
 	// Calculate the start and end index
 	startIndex := (body.Page - 1) * itemsPerPage
 
-	
 	var tweets []models.Tweet
 	result := initializers.DB.Table("tweets").
 		Joins("LEFT JOIN user_followers ON user_followers.follower_id = tweets.user_id").
