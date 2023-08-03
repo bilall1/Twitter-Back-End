@@ -259,3 +259,125 @@ func GetLikesOnTweet(c *gin.Context) {
 	})
 
 }
+
+func SubmitComment(c *gin.Context) {
+
+	var body struct {
+		TweetId int
+		UserId  int
+		Content string
+	}
+	c.Bind(&body)
+
+	result1 := initializers.DB.Exec("INSERT INTO tweets_comments ( tweet_id, user_id,tweet_comment) VALUES (?, ?,?)", body.TweetId, body.UserId, body.Content)
+
+	if result1.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Comment": 1,
+	})
+
+}
+
+func ShowCommentsOnTweet(c *gin.Context) {
+
+	var body struct {
+		TweetId int
+	}
+	c.Bind(&body)
+
+	type result struct {
+		Id           int
+		TweetId      int
+		UserId       int
+		TweetComment string
+		Email        string
+		FirstName    string
+		LastName     string
+	}
+
+	var results []result
+
+	query := initializers.DB.Table("tweets_comments").
+		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
+		Joins("left join users on tweets_comments.user_id = users.id").
+		Where("tweets_comments.tweet_id = ?", body.TweetId).
+		Find(&results)
+
+	if query.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Comments": results,
+	})
+
+}
+
+func GetTotalCommentOnTweet(c *gin.Context) {
+
+	var body struct {
+		TweetId int
+	}
+	c.Bind(&body)
+
+	var count int64
+	result := initializers.DB.Raw("SELECT COUNT(*) FROM tweets_comments WHERE tweet_id = ?", body.TweetId).Scan(&count)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Count": count,
+	})
+
+}
+
+func UpdateTweetContent(c *gin.Context) {
+
+	var body struct {
+		TweetId int
+		Content string
+	}
+	c.Bind(&body)
+
+	result1 := initializers.DB.Exec("UPDATE tweets SET content = ? WHERE id = ?", body.Content, body.TweetId)
+
+	if result1.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"update": 1,
+	})
+
+}
+
+func DeleteTweet(c *gin.Context) {
+
+	var body struct {
+		TweetId int
+	}
+	c.Bind(&body)
+
+	// Execute query
+
+	result1 := initializers.DB.Exec("DELETE FROM tweets WHERE id = ?", body.TweetId)
+
+	if result1.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Deleted": 1,
+	})
+
+}

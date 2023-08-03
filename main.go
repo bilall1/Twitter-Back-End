@@ -41,5 +41,10 @@ func main() {
 	r.POST("likeTweet", controllers.LikeTweet)
 	r.POST("unlikeTweet", controllers.UnlikeTweet)
 	r.POST("getLikesOnTweet", controllers.GetLikesOnTweet)
+	r.POST("submitComment", controllers.SubmitComment)
+	r.POST("showCommentsOnTweet", controllers.ShowCommentsOnTweet)
+	r.POST("getTotalCommentOnTweet", controllers.GetTotalCommentOnTweet)
+	r.PUT("updateTweetContent", controllers.UpdateTweetContent)
+	r.POST("deleteTweet", controllers.DeleteTweet)
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
