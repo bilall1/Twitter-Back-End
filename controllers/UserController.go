@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bilall1/twitter-backend/initializers"
 	"github.com/bilall1/twitter-backend/models"
@@ -21,6 +22,12 @@ func CreateUser(c *gin.Context) {
 		LastName   string
 	}
 	c.Bind(&body)
+
+	if body.D_o_b == "" {
+		currentTime := time.Now()
+		body.D_o_b = currentTime.Format("2006-01-02")
+
+	}
 
 	user := models.User{FirstName: body.FirstName, LastName: body.LastName, D_o_b: body.D_o_b, Email: body.Email, Password: body.Password, ThirdParty: body.ThirdParty, Id: 0}
 
