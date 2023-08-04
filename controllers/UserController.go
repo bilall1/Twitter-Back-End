@@ -249,3 +249,27 @@ func GetFollowers(c *gin.Context) {
 	})
 
 }
+
+func UpdateUserData(c *gin.Context) {
+
+	var body struct {
+		Id        int
+		FirstName string
+		LastName  string
+		D_o_b     string
+		Password  string
+	}
+	c.Bind(&body)
+
+	result1 := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ?, password = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Password, body.Id)
+
+	if result1.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"update": 1,
+	})
+
+}

@@ -286,8 +286,13 @@ func ShowCommentsOnTweet(c *gin.Context) {
 
 	var body struct {
 		TweetId int
+		Page    int
 	}
 	c.Bind(&body)
+
+	itemsPerPage := 3
+
+	startIndex := (body.Page - 1) * itemsPerPage
 
 	type result struct {
 		Id           int
@@ -305,6 +310,8 @@ func ShowCommentsOnTweet(c *gin.Context) {
 		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
 		Joins("left join users on tweets_comments.user_id = users.id").
 		Where("tweets_comments.tweet_id = ?", body.TweetId).
+		Offset(startIndex).
+		Limit(itemsPerPage).
 		Find(&results)
 
 	if query.Error != nil {
