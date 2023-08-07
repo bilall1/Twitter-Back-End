@@ -17,6 +17,7 @@ type tweetData struct {
 	FirstName string
 	LastName  string
 	Email     string
+	Profile   string
 }
 
 func PostTweet(c *gin.Context) {
@@ -142,6 +143,7 @@ func GetFollowersTweet(c *gin.Context) {
 		singleTweet.FirstName = user1.FirstName
 		singleTweet.LastName = user1.LastName
 		singleTweet.Email = user1.Email
+		singleTweet.Profile = user1.Profile
 
 		sendTweet = append(sendTweet, singleTweet)
 
@@ -286,13 +288,9 @@ func ShowCommentsOnTweet(c *gin.Context) {
 
 	var body struct {
 		TweetId int
-		Page    int
+		Limit   int
 	}
 	c.Bind(&body)
-
-	itemsPerPage := 3
-
-	startIndex := (body.Page - 1) * itemsPerPage
 
 	type result struct {
 		Id           int
@@ -310,14 +308,24 @@ func ShowCommentsOnTweet(c *gin.Context) {
 		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
 		Joins("left join users on tweets_comments.user_id = users.id").
 		Where("tweets_comments.tweet_id = ?", body.TweetId).
-		Offset(startIndex).
-		Limit(itemsPerPage).
+		Order("tweets_comments.id desc").
+		Limit(3).
 		Find(&results)
+
+	// initializers.DB.Table("tweets_comments").
+	// 	Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
+	// 	Joins("left join users on tweets_comments.user_id = users.id").
+	// 	Where("tweets_comments.tweet_id = ?", body.TweetId).
+	// 	Offset(startIndex).
+	// 	Limit(itemsPerPage).
+	// 	Find(&results)
 
 	if query.Error != nil {
 		c.Status(400)
 		return
 	}
+
+	fmt.Println(results)
 
 	c.JSON(200, gin.H{
 		"Comments": results,

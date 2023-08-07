@@ -47,5 +47,6 @@ func main() {
 	r.PUT("updateTweetContent", controllers.UpdateTweetContent)
 	r.POST("deleteTweet", controllers.DeleteTweet)
 	r.POST("updateUserData", controllers.UpdateUserData)
+	r.POST("addProfilePicture", controllers.AddProfilePicture)
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
