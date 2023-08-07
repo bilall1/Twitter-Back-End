@@ -59,6 +59,8 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
+	fmt.Println(user)
+
 	c.JSON(200, gin.H{
 		"user": user,
 	})
@@ -279,4 +281,24 @@ func UpdateUserData(c *gin.Context) {
 		"update": 1,
 	})
 
+}
+
+func AddProfilePicture(c *gin.Context) {
+
+	var body struct {
+		Id   int
+		Link string
+	}
+	c.Bind(&body)
+
+	result1 := initializers.DB.Debug().Exec("UPDATE users SET profile = ? WHERE id = ?", body.Link, body.Id)
+
+	if result1.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Picture": 1,
+	})
 }
