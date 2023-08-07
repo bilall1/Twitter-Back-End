@@ -8,6 +8,7 @@ type User struct {
 	D_o_b      string
 	FirstName  string
 	LastName   string
+	Profile    string
 }
 
 type Tweet struct {
