@@ -302,3 +302,44 @@ func AddProfilePicture(c *gin.Context) {
 		"Picture": 1,
 	})
 }
+
+func GetTotalFollowers(c *gin.Context) {
+
+	var body struct {
+		Id int
+	}
+	c.Bind(&body)
+
+	var count int64
+	result := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE follower_id = ?", body.Id).Scan(&count)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Count": count,
+	})
+
+}
+func GetTotalFollowings(c *gin.Context) {
+
+	var body struct {
+		Id int
+	}
+	c.Bind(&body)
+
+	var count int64
+	result := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE user_id = ?", body.Id).Scan(&count)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Count": count,
+	})
+
+}

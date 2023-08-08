@@ -37,7 +37,9 @@ func PostTweet(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, "Tweet Posted")
+	c.JSON(200, gin.H{
+		"Tweet": tweet,
+	})
 
 }
 
@@ -300,25 +302,18 @@ func ShowCommentsOnTweet(c *gin.Context) {
 		Email        string
 		FirstName    string
 		LastName     string
+		Profile      string
 	}
 
 	var results []result
 
 	query := initializers.DB.Table("tweets_comments").
-		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
+		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name , users.profile").
 		Joins("left join users on tweets_comments.user_id = users.id").
 		Where("tweets_comments.tweet_id = ?", body.TweetId).
 		Order("tweets_comments.id desc").
-		Limit(3).
+		Limit(body.Limit).
 		Find(&results)
-
-	// initializers.DB.Table("tweets_comments").
-	// 	Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
-	// 	Joins("left join users on tweets_comments.user_id = users.id").
-	// 	Where("tweets_comments.tweet_id = ?", body.TweetId).
-	// 	Offset(startIndex).
-	// 	Limit(itemsPerPage).
-	// 	Find(&results)
 
 	if query.Error != nil {
 		c.Status(400)
