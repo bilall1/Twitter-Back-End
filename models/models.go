@@ -15,6 +15,7 @@ type Tweet struct {
 	Id      int
 	Content string
 	UserId  int
+	Link    string
 }
 
 type UserFollowers struct {
