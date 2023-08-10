@@ -18,6 +18,7 @@ type tweetData struct {
 	LastName  string
 	Email     string
 	Profile   string
+	Link      string
 }
 
 func PostTweet(c *gin.Context) {
@@ -25,10 +26,11 @@ func PostTweet(c *gin.Context) {
 	var body struct {
 		Id      int
 		Content string
+		Link    string
 	}
 	c.Bind(&body)
 
-	tweet := models.Tweet{Content: body.Content, UserId: body.Id, Id: 0}
+	tweet := models.Tweet{Content: body.Content, UserId: body.Id, Link: body.Link, Id: 0}
 
 	result := initializers.DB.Create(&tweet)
 
@@ -146,10 +148,12 @@ func GetFollowersTweet(c *gin.Context) {
 		singleTweet.LastName = user1.LastName
 		singleTweet.Email = user1.Email
 		singleTweet.Profile = user1.Profile
+		singleTweet.Link = tweets[i].Link
 
 		sendTweet = append(sendTweet, singleTweet)
 
 	}
+	fmt.Println(sendTweet)
 
 	c.JSON(200, gin.H{
 		"Tweets": sendTweet,
