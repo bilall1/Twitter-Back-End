@@ -18,6 +18,7 @@ type tweetData struct {
 	LastName  string
 	Email     string
 	Profile   string
+	Link      string
 }
 
 func PostTweet(c *gin.Context) {
@@ -25,10 +26,11 @@ func PostTweet(c *gin.Context) {
 	var body struct {
 		Id      int
 		Content string
+		Link    string
 	}
 	c.Bind(&body)
 
-	tweet := models.Tweet{Content: body.Content, UserId: body.Id, Id: 0}
+	tweet := models.Tweet{Content: body.Content, UserId: body.Id, Link: body.Link, Id: 0}
 
 	result := initializers.DB.Create(&tweet)
 
@@ -37,7 +39,9 @@ func PostTweet(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, "Tweet Posted")
+	c.JSON(200, gin.H{
+		"Tweet": tweet,
+	})
 
 }
 
@@ -144,10 +148,12 @@ func GetFollowersTweet(c *gin.Context) {
 		singleTweet.LastName = user1.LastName
 		singleTweet.Email = user1.Email
 		singleTweet.Profile = user1.Profile
+		singleTweet.Link = tweets[i].Link
 
 		sendTweet = append(sendTweet, singleTweet)
 
 	}
+	fmt.Println(sendTweet)
 
 	c.JSON(200, gin.H{
 		"Tweets": sendTweet,
@@ -300,25 +306,18 @@ func ShowCommentsOnTweet(c *gin.Context) {
 		Email        string
 		FirstName    string
 		LastName     string
+		Profile      string
 	}
 
 	var results []result
 
 	query := initializers.DB.Table("tweets_comments").
-		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
+		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name , users.profile").
 		Joins("left join users on tweets_comments.user_id = users.id").
 		Where("tweets_comments.tweet_id = ?", body.TweetId).
 		Order("tweets_comments.id desc").
-		Limit(3).
+		Limit(body.Limit).
 		Find(&results)
-
-	// initializers.DB.Table("tweets_comments").
-	// 	Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name").
-	// 	Joins("left join users on tweets_comments.user_id = users.id").
-	// 	Where("tweets_comments.tweet_id = ?", body.TweetId).
-	// 	Offset(startIndex).
-	// 	Limit(itemsPerPage).
-	// 	Find(&results)
 
 	if query.Error != nil {
 		c.Status(400)

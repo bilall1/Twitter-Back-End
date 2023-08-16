@@ -7,8 +7,19 @@ import (
 	"github.com/bilall1/twitter-backend/initializers"
 	"github.com/bilall1/twitter-backend/models"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	// PostgreSQL driver
 )
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
 
 func CreateUser(c *gin.Context) {
 
@@ -29,7 +40,9 @@ func CreateUser(c *gin.Context) {
 
 	}
 
-	user := models.User{FirstName: body.FirstName, LastName: body.LastName, D_o_b: body.D_o_b, Email: body.Email, Password: body.Password, ThirdParty: body.ThirdParty, Id: 0}
+	hash, _ := HashPassword(body.Password)
+
+	user := models.User{FirstName: body.FirstName, LastName: body.LastName, D_o_b: body.D_o_b, Email: body.Email, Password: hash, ThirdParty: body.ThirdParty, Id: 0}
 
 	result := initializers.DB.Debug().Create(&user)
 
@@ -76,16 +89,24 @@ func ValidateUser(c *gin.Context) {
 	c.Bind(&body)
 
 	var user models.User
-	userobject := initializers.DB.Debug().Where("email = ? AND password = ?", body.Email, body.Password).First(&user)
+	userobject := initializers.DB.Debug().Where("email = ? ", body.Email).First(&user)
+
+	if CheckPasswordHash(body.Password, user.Password) {
+
+		c.JSON(200, gin.H{
+			"user": user,
+		})
+
+	} else {
+		c.Status(400)
+		return
+
+	}
 
 	if userobject.Error != nil {
 		c.Status(400)
 		return
 	}
-
-	c.JSON(200, gin.H{
-		"user": user,
-	})
 
 }
 
@@ -266,11 +287,10 @@ func UpdateUserData(c *gin.Context) {
 		FirstName string
 		LastName  string
 		D_o_b     string
-		Password  string
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ?, password = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Password, body.Id)
+	result1 := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Id)
 
 	if result1.Error != nil {
 		c.Status(400)
@@ -280,6 +300,47 @@ func UpdateUserData(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"update": 1,
 	})
+
+}
+
+func UpdateUserPassword(c *gin.Context) {
+
+	var body struct {
+		Id          int
+		OldPassword string
+		NewPassword string
+	}
+	c.Bind(&body)
+
+	fmt.Println("Old: ", body.OldPassword)
+	var user models.User
+	userobject := initializers.DB.Debug().Where("Id = ? ", body.Id).First(&user)
+	if userobject.Error != nil {
+		c.Status(400)
+		return
+
+	}
+
+	if CheckPasswordHash(body.OldPassword, user.Password) {
+
+		newHash, _ := HashPassword(body.NewPassword)
+
+		result1 := initializers.DB.Debug().Exec("UPDATE users SET password = ? WHERE id = ?", newHash, body.Id)
+
+		if result1.Error != nil {
+			c.Status(400)
+			return
+		}
+		c.JSON(200, gin.H{
+			"update": 1,
+		})
+
+	} else {
+		c.JSON(200, gin.H{
+			"update": 0,
+		})
+
+	}
 
 }
 
@@ -301,4 +362,45 @@ func AddProfilePicture(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"Picture": 1,
 	})
+}
+
+func GetTotalFollowers(c *gin.Context) {
+
+	var body struct {
+		Id int
+	}
+	c.Bind(&body)
+
+	var count int64
+	result := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE follower_id = ?", body.Id).Scan(&count)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Count": count,
+	})
+
+}
+func GetTotalFollowings(c *gin.Context) {
+
+	var body struct {
+		Id int
+	}
+	c.Bind(&body)
+
+	var count int64
+	result := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE user_id = ?", body.Id).Scan(&count)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"Count": count,
+	})
+
 }
