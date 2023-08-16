@@ -287,13 +287,10 @@ func UpdateUserData(c *gin.Context) {
 		FirstName string
 		LastName  string
 		D_o_b     string
-		Password  string
 	}
 	c.Bind(&body)
 
-	hash, _ := HashPassword(body.Password)
-
-	result1 := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ?, password = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, hash, body.Id)
+	result1 := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Id)
 
 	if result1.Error != nil {
 		c.Status(400)
@@ -303,6 +300,47 @@ func UpdateUserData(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"update": 1,
 	})
+
+}
+
+func UpdateUserPassword(c *gin.Context) {
+
+	var body struct {
+		Id          int
+		OldPassword string
+		NewPassword string
+	}
+	c.Bind(&body)
+
+	fmt.Println("Old: ", body.OldPassword)
+	var user models.User
+	userobject := initializers.DB.Debug().Where("Id = ? ", body.Id).First(&user)
+	if userobject.Error != nil {
+		c.Status(400)
+		return
+
+	}
+
+	if CheckPasswordHash(body.OldPassword, user.Password) {
+
+		newHash, _ := HashPassword(body.NewPassword)
+
+		result1 := initializers.DB.Debug().Exec("UPDATE users SET password = ? WHERE id = ?", newHash, body.Id)
+
+		if result1.Error != nil {
+			c.Status(400)
+			return
+		}
+		c.JSON(200, gin.H{
+			"update": 1,
+		})
+
+	} else {
+		c.JSON(200, gin.H{
+			"update": 0,
+		})
+
+	}
 
 }
 
