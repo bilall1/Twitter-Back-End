@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/bilall1/twitter-backend/initializers"
 	"github.com/bilall1/twitter-backend/models"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	// PostgreSQL driver
@@ -402,5 +404,31 @@ func GetTotalFollowings(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"Count": count,
 	})
+
+}
+
+func GenerateToken(c *gin.Context) {
+
+	var body struct {
+		Email string
+	}
+	c.Bind(&body)
+
+	//Token assigning
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"Email": body.Email,                            // User identifier
+		"exp":   time.Now().Add(time.Hour * 24).Unix(), // Token expiration time
+	})
+
+	// Sign the token with the secret key
+	tokenString, err := token.SignedString([]byte("aurorasolutions"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
+
+	//Returning jwt token as response
+	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 
 }
