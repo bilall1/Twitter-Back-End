@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"github.com/bilall1/twitter-backend/initializers"
-	"github.com/bilall1/twitter-backend/models"
+	"twitter-back-end/initializers"
+	"twitter-back-end/models"
+
 	"github.com/gin-gonic/gin"
 	// PostgreSQL driver
 )
@@ -30,9 +31,9 @@ func PostTweet(c *gin.Context) {
 
 	tweet := models.Tweet{Content: body.Content, UserId: body.Id, Link: body.Link, Id: 0}
 
-	result := initializers.DB.Create(&tweet)
+	tweetPosted := initializers.DB.Create(&tweet)
 
-	if result.Error != nil {
+	if tweetPosted.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -65,8 +66,8 @@ func GetTweet(c *gin.Context) {
 
 	var tweets []models.Tweet
 
-	result := initializers.DB.Where("user_Id = ?", user.Id).Order("tweets.id desc").Limit(itemsPerPage).Offset(startIndex).Find(&tweets)
-	if result.Error != nil {
+	tweetData := initializers.DB.Where("user_Id = ?", user.Id).Order("tweets.id desc").Limit(itemsPerPage).Offset(startIndex).Find(&tweets)
+	if tweetData.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -104,7 +105,7 @@ func GetFollowersTweet(c *gin.Context) {
 	startIndex := (body.Page - 1) * itemsPerPage
 
 	var tweets []models.Tweet
-	result := initializers.DB.Table("tweets").
+	tweetsFollowers := initializers.DB.Table("tweets").
 		Joins("LEFT JOIN user_followers ON user_followers.follower_id = tweets.user_id").
 		Where("(user_followers.user_id = ?) OR (tweets.user_id = ?)", body.Id, body.Id).
 		Order("tweets.id desc").
@@ -121,7 +122,7 @@ func GetFollowersTweet(c *gin.Context) {
 
 	}
 
-	if result.Error != nil {
+	if tweetsFollowers.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -131,9 +132,9 @@ func GetFollowersTweet(c *gin.Context) {
 	for i := 0; i < len(tweets); i++ {
 
 		var user1 models.User
-		result := initializers.DB.Where("Id = ?", tweets[i].UserId).Find(&user1)
+		theUser := initializers.DB.Where("Id = ?", tweets[i].UserId).Find(&user1)
 
-		if result.Error != nil {
+		if theUser.Error != nil {
 			c.Status(400)
 			return
 		}
@@ -174,9 +175,9 @@ func GetIfTweetLiked(c *gin.Context) {
 
 	var data likeData
 
-	result := initializers.DB.Raw("SELECT * FROM tweets_likes WHERE tweet_id = ? AND user_id = ?", body.TweetId, body.UserId).Scan(&data)
+	ifLiked := initializers.DB.Raw("SELECT * FROM tweets_likes WHERE tweet_id = ? AND user_id = ?", body.TweetId, body.UserId).Scan(&data)
 
-	if result.Error != nil {
+	if ifLiked.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -204,9 +205,9 @@ func LikeTweet(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Exec("INSERT INTO tweets_likes ( tweet_id, user_id) VALUES (?, ?)", body.TweetId, body.UserId)
+	likeTweet := initializers.DB.Exec("INSERT INTO tweets_likes ( tweet_id, user_id) VALUES (?, ?)", body.TweetId, body.UserId)
 
-	if result1.Error != nil {
+	if likeTweet.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -225,9 +226,9 @@ func UnlikeTweet(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Exec("DELETE FROM tweets_likes WHERE tweet_id = ? AND user_id = ?", body.TweetId, body.UserId)
+	unlikeTweet := initializers.DB.Exec("DELETE FROM tweets_likes WHERE tweet_id = ? AND user_id = ?", body.TweetId, body.UserId)
 
-	if result1.Error != nil {
+	if unlikeTweet.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -246,9 +247,9 @@ func GetLikesOnTweet(c *gin.Context) {
 	c.Bind(&body)
 
 	var count int64
-	result := initializers.DB.Raw("SELECT COUNT(*) FROM tweets_likes WHERE tweet_id = ?", body.TweetId).Scan(&count)
+	getLikes := initializers.DB.Raw("SELECT COUNT(*) FROM tweets_likes WHERE tweet_id = ?", body.TweetId).Scan(&count)
 
-	if result.Error != nil {
+	if getLikes.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -268,9 +269,9 @@ func SubmitComment(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Exec("INSERT INTO tweets_comments ( tweet_id, user_id,tweet_comment) VALUES (?, ?,?)", body.TweetId, body.UserId, body.Content)
+	comment := initializers.DB.Exec("INSERT INTO tweets_comments ( tweet_id, user_id,tweet_comment) VALUES (?, ?,?)", body.TweetId, body.UserId, body.Content)
 
-	if result1.Error != nil {
+	if comment.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -329,9 +330,9 @@ func GetTotalCommentOnTweet(c *gin.Context) {
 	c.Bind(&body)
 
 	var count int64
-	result := initializers.DB.Raw("SELECT COUNT(*) FROM tweets_comments WHERE tweet_id = ?", body.TweetId).Scan(&count)
+	totalComments := initializers.DB.Raw("SELECT COUNT(*) FROM tweets_comments WHERE tweet_id = ?", body.TweetId).Scan(&count)
 
-	if result.Error != nil {
+	if totalComments.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -350,9 +351,9 @@ func UpdateTweetContent(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Exec("UPDATE tweets SET content = ? WHERE id = ?", body.Content, body.TweetId)
+	uodateContent := initializers.DB.Exec("UPDATE tweets SET content = ? WHERE id = ?", body.Content, body.TweetId)
 
-	if result1.Error != nil {
+	if uodateContent.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -372,9 +373,9 @@ func DeleteTweet(c *gin.Context) {
 
 	// Execute query
 
-	result1 := initializers.DB.Exec("DELETE FROM tweets WHERE id = ?", body.TweetId)
+	deleteTweet := initializers.DB.Exec("DELETE FROM tweets WHERE id = ?", body.TweetId)
 
-	if result1.Error != nil {
+	if deleteTweet.Error != nil {
 		c.Status(400)
 		return
 	}

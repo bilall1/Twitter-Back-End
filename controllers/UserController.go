@@ -5,23 +5,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bilall1/twitter-backend/initializers"
-	"github.com/bilall1/twitter-backend/models"
+	"twitter-back-end/initializers"
+	"twitter-back-end/models"
+	"twitter-back-end/sharedFunctions"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	// PostgreSQL driver
 )
-
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
 
 func CreateUser(c *gin.Context) {
 
@@ -42,13 +33,13 @@ func CreateUser(c *gin.Context) {
 
 	}
 
-	hash, _ := HashPassword(body.Password)
+	hash, _ := sharedFunctions.HashPassword(body.Password)
 
 	user := models.User{FirstName: body.FirstName, LastName: body.LastName, D_o_b: body.D_o_b, Email: body.Email, Password: hash, ThirdParty: body.ThirdParty, Id: 0}
 
-	result := initializers.DB.Debug().Create(&user)
+	userCreated := initializers.DB.Debug().Create(&user)
 
-	if result.Error != nil {
+	if userCreated.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -67,9 +58,9 @@ func GetUser(c *gin.Context) {
 	c.Bind(&body)
 
 	var user models.User
-	result := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
+	theUser := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
 
-	if result.Error != nil {
+	if theUser.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -93,7 +84,7 @@ func ValidateUser(c *gin.Context) {
 	var user models.User
 	userobject := initializers.DB.Debug().Where("email = ? ", body.Email).First(&user)
 
-	if CheckPasswordHash(body.Password, user.Password) {
+	if sharedFunctions.CheckPasswordHash(body.Password, user.Password) {
 
 		c.JSON(200, gin.H{
 			"user": user,
@@ -121,9 +112,9 @@ func GetPeopleToFollow(c *gin.Context) {
 
 	//Getting id's of people that appear in people you may know
 	var user_followers []int
-	result1 := initializers.DB.Raw("SELECT follower_id FROM user_followers WHERE user_id = ?", body.Id).Scan(&user_followers)
+	followersList := initializers.DB.Raw("SELECT follower_id FROM user_followers WHERE user_id = ? LIMIT ?", body.Id, 5).Scan(&user_followers)
 
-	if result1.Error != nil {
+	if followersList.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -135,23 +126,17 @@ func GetPeopleToFollow(c *gin.Context) {
 
 		user_followers = append(user_followers, body.Id)
 
-		result2 := initializers.DB.Not("id", user_followers).Find(&users)
-		if result2.Error != nil {
+		theUser := initializers.DB.Not("id", user_followers).Find(&users)
+		if theUser.Error != nil {
 			c.Status(400)
 			return
 		}
 	} else {
-		result2 := initializers.DB.Where("id != ?", body.Id).Find(&users)
-		if result2.Error != nil {
+		theUser := initializers.DB.Where("id != ?", body.Id).Find(&users)
+		if theUser.Error != nil {
 			c.Status(400)
 			return
 		}
-
-	}
-	if len(users) <= 5 {
-
-	} else {
-		users = users[0:5]
 
 	}
 
@@ -170,9 +155,9 @@ func AddtofollowerList(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Exec("INSERT INTO user_followers ( user_id, follower_id) VALUES (?, ?)", body.UserId, body.FollowerID)
+	userInserted := initializers.DB.Exec("INSERT INTO user_followers ( user_id, follower_id) VALUES (?, ?)", body.UserId, body.FollowerID)
 
-	if result1.Error != nil {
+	if userInserted.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -197,9 +182,9 @@ func GetFollowing(c *gin.Context) {
 	//Getting id's of people that appear in people you may know
 	var user_followers []int
 	query := fmt.Sprintf("SELECT follower_id FROM user_followers WHERE user_id = ? LIMIT %d OFFSET %d", itemsPerPage, startIndex)
-	result1 := initializers.DB.Raw(query, body.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
+	followingsList := initializers.DB.Raw(query, body.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
 
-	if result1.Error != nil {
+	if followingsList.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -213,8 +198,8 @@ func GetFollowing(c *gin.Context) {
 	}
 
 	var users []models.User
-	result2 := initializers.DB.Where("id", user_followers).Find(&users)
-	if result2.Error != nil {
+	userList := initializers.DB.Where("id", user_followers).Find(&users)
+	if userList.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -256,9 +241,9 @@ func GetFollowers(c *gin.Context) {
 	//Getting id's of people that appear in people you may know
 	var user_followers []int
 	query := fmt.Sprintf("SELECT user_id FROM user_followers WHERE follower_id = ? LIMIT %d OFFSET %d", itemsPerPage, startIndex)
-	result1 := initializers.DB.Raw(query, body.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
+	followersList := initializers.DB.Raw(query, body.Id).Limit(itemsPerPage).Offset(startIndex).Scan(&user_followers)
 
-	if result1.Error != nil {
+	if followersList.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -292,9 +277,9 @@ func UpdateUserData(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Id)
+	updated := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Id)
 
-	if result1.Error != nil {
+	if updated.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -323,13 +308,13 @@ func UpdateUserPassword(c *gin.Context) {
 
 	}
 
-	if CheckPasswordHash(body.OldPassword, user.Password) {
+	if sharedFunctions.CheckPasswordHash(body.OldPassword, user.Password) {
 
-		newHash, _ := HashPassword(body.NewPassword)
+		newHash, _ := sharedFunctions.HashPassword(body.NewPassword)
 
-		result1 := initializers.DB.Debug().Exec("UPDATE users SET password = ? WHERE id = ?", newHash, body.Id)
+		setPassword := initializers.DB.Debug().Exec("UPDATE users SET password = ? WHERE id = ?", newHash, body.Id)
 
-		if result1.Error != nil {
+		if setPassword.Error != nil {
 			c.Status(400)
 			return
 		}
@@ -354,9 +339,9 @@ func AddProfilePicture(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	result1 := initializers.DB.Debug().Exec("UPDATE users SET profile = ? WHERE id = ?", body.Link, body.Id)
+	addProfile := initializers.DB.Debug().Exec("UPDATE users SET profile = ? WHERE id = ?", body.Link, body.Id)
 
-	if result1.Error != nil {
+	if addProfile.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -374,9 +359,9 @@ func GetTotalFollowers(c *gin.Context) {
 	c.Bind(&body)
 
 	var count int64
-	result := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE follower_id = ?", body.Id).Scan(&count)
+	counts := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE follower_id = ?", body.Id).Scan(&count)
 
-	if result.Error != nil {
+	if counts.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -394,9 +379,9 @@ func GetTotalFollowings(c *gin.Context) {
 	c.Bind(&body)
 
 	var count int64
-	result := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE user_id = ?", body.Id).Scan(&count)
+	counts := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE user_id = ?", body.Id).Scan(&count)
 
-	if result.Error != nil {
+	if counts.Error != nil {
 		c.Status(400)
 		return
 	}
