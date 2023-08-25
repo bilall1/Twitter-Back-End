@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/bilall1/twitter-backend/initializers"
 	"github.com/bilall1/twitter-backend/models"
 	"github.com/gin-gonic/gin"
@@ -153,7 +151,6 @@ func GetFollowersTweet(c *gin.Context) {
 		sendTweet = append(sendTweet, singleTweet)
 
 	}
-	fmt.Println(sendTweet)
 
 	c.JSON(200, gin.H{
 		"Tweets": sendTweet,
@@ -177,18 +174,12 @@ func GetIfTweetLiked(c *gin.Context) {
 
 	var data likeData
 
-	// userobject := initializers.DB.Where("tweet_id = ? AND user_id= ? ", body.tweetId, body.UserId).Scan(&data)
-
-	fmt.Println(body.TweetId, body.UserId)
-
 	result := initializers.DB.Raw("SELECT * FROM tweets_likes WHERE tweet_id = ? AND user_id = ?", body.TweetId, body.UserId).Scan(&data)
 
 	if result.Error != nil {
 		c.Status(400)
 		return
 	}
-
-	fmt.Println(data)
 
 	if data.Id == 0 {
 
@@ -323,8 +314,6 @@ func ShowCommentsOnTweet(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-
-	fmt.Println(results)
 
 	c.JSON(200, gin.H{
 		"Comments": results,
