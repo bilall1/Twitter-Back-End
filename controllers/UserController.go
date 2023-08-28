@@ -58,9 +58,9 @@ func GetUser(c *gin.Context) {
 	c.Bind(&body)
 
 	var user models.User
-	theUser := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
+	userResponse := initializers.DB.Debug().Where("email = ?", body.Email).Find(&user)
 
-	if theUser.Error != nil {
+	if userResponse.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -126,14 +126,14 @@ func GetPeopleToFollow(c *gin.Context) {
 
 		user_followers = append(user_followers, body.Id)
 
-		theUser := initializers.DB.Not("id", user_followers).Find(&users)
-		if theUser.Error != nil {
+		userResponse := initializers.DB.Not("id", user_followers).Find(&users)
+		if userResponse.Error != nil {
 			c.Status(400)
 			return
 		}
 	} else {
-		theUser := initializers.DB.Where("id != ?", body.Id).Find(&users)
-		if theUser.Error != nil {
+		userResponse := initializers.DB.Where("id != ?", body.Id).Find(&users)
+		if userResponse.Error != nil {
 			c.Status(400)
 			return
 		}
@@ -277,9 +277,9 @@ func UpdateUserData(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	updated := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Id)
+	updatedUser := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", body.FirstName, body.LastName, body.D_o_b, body.Id)
 
-	if updated.Error != nil {
+	if updatedUser.Error != nil {
 		c.Status(400)
 		return
 	}
@@ -359,9 +359,9 @@ func GetTotalFollowers(c *gin.Context) {
 	c.Bind(&body)
 
 	var count int64
-	counts := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE follower_id = ?", body.Id).Scan(&count)
+	followerCount := initializers.DB.Raw("SELECT COUNT(*) FROM user_followers WHERE follower_id = ?", body.Id).Scan(&count)
 
-	if counts.Error != nil {
+	if followerCount.Error != nil {
 		c.Status(400)
 		return
 	}

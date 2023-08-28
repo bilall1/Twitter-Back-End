@@ -351,9 +351,9 @@ func UpdateTweetContent(c *gin.Context) {
 	}
 	c.Bind(&body)
 
-	uodateContent := initializers.DB.Exec("UPDATE tweets SET content = ? WHERE id = ?", body.Content, body.TweetId)
+	updateContent := initializers.DB.Exec("UPDATE tweets SET content = ? WHERE id = ?", body.Content, body.TweetId)
 
-	if uodateContent.Error != nil {
+	if updateContent.Error != nil {
 		c.Status(400)
 		return
 	}
