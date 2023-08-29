@@ -28,7 +28,7 @@ func main() {
 
 	r.Use(cors.New(corsConfig))
 
-	r.POST("/createUser", controllers.AuthenticateJWT, controllers.CreateUser)
+	r.POST("/createUser", controllers.CreateUser)
 	r.GET("/getUser", controllers.GetUser)
 	r.POST("/postTweet", controllers.AuthenticateJWT, controllers.PostTweet)
 

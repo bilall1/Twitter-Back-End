@@ -5,7 +5,6 @@ import (
 	"twitter-back-end/models"
 
 	"github.com/gin-gonic/gin"
-	// PostgreSQL driver
 )
 
 // Struct Defined to send Tweet data.
