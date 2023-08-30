@@ -8,21 +8,27 @@ import (
 	"twitter-back-end/structs"
 )
 
-func CreateUser(Id int, Email string, Password string, ThirdParty bool, D_o_b string, FirstName string, LastName string) (*models.User, error) {
+func CreateUser(Id int, Email string, Password string, ThirdParty bool, D_o_b string, FirstName string, LastName string) (bool, error) {
 
-	user := models.User{FirstName: FirstName, LastName: LastName, D_o_b: D_o_b, Email: Email, Password: Password, ThirdParty: ThirdParty, Id: 0}
-	err := initializers.DB.Debug().Create(&user).Error
-
-	if err != nil {
-		return nil, err
+	if D_o_b == "" {
+		err := initializers.DB.Exec("INSERT INTO users (first_name,last_name,d_o_b,email,password,third_party) VALUES (?, ?,?,?,?,?)", FirstName, LastName, nil, Email, Password, ThirdParty).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	} else {
+		err := initializers.DB.Exec("INSERT INTO users (first_name,last_name,d_o_b,email,password,third_party) VALUES (?,?,?,?,?,?)", FirstName, LastName, D_o_b, Email, Password, ThirdParty).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
 	}
-	return &user, nil
 }
 
 func GetUser(Email string) (*models.User, error) {
 
 	var user models.User
-	err := initializers.DB.Debug().Where("email = ?", Email).Find(&user).Error
+	err := initializers.DB.Debug().Where("email = ?", Email).First(&user).Error
 
 	if err != nil {
 		return nil, err

@@ -11,12 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func CreateUser(user models.User) (*models.User, error) {
-
-	if user.D_o_b == "" {
-		currentTime := time.Now()
-		user.D_o_b = currentTime.Format("2006-01-02")
-	}
+func CreateUser(user models.User) (bool, error) {
 	hash, _ := sharedFunctions.HashPassword(user.Password)
 	userResponse, err := repository.CreateUser(user.Id, user.Email, hash, user.ThirdParty, user.D_o_b, user.FirstName, user.LastName)
 	return userResponse, err
