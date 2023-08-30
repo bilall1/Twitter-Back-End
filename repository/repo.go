@@ -28,7 +28,7 @@ func CreateUser(Id int, Email string, Password string, ThirdParty bool, D_o_b st
 func GetUser(Email string) (*models.User, error) {
 
 	var user models.User
-	err := initializers.DB.Debug().Where("email = ?", Email).First(&user).Error
+	err := initializers.DB.Where("email = ?", Email).First(&user).Error
 
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func GetUser(Email string) (*models.User, error) {
 func ValidateUser(Email string, password string) (*models.User, error) {
 
 	var user models.User
-	err := initializers.DB.Debug().Where("email = ? ", Email).First(&user).Error
+	err := initializers.DB.Where("email = ? ", Email).First(&user).Error
 
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func GetFollowersIdsPerPage(Id int, itemsPerPage int, startIndex int) ([]int, er
 
 func UpdateUserInfo(Id int, FirstName string, LastName string, D_o_b string) (bool, error) {
 
-	err := initializers.DB.Debug().Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", FirstName, LastName, D_o_b, Id).Error
+	err := initializers.DB.Exec("UPDATE users SET first_name = ?, last_name = ?, d_o_b = ? WHERE id = ?", FirstName, LastName, D_o_b, Id).Error
 
 	if err != nil {
 		return false, err
@@ -151,7 +151,7 @@ func UpdateUserInfo(Id int, FirstName string, LastName string, D_o_b string) (bo
 
 func SetProfile(Id int, Link string) (bool, error) {
 
-	err := initializers.DB.Debug().Exec("UPDATE users SET profile = ? WHERE id = ?", Link, Id).Error
+	err := initializers.DB.Exec("UPDATE users SET profile = ? WHERE id = ?", Link, Id).Error
 
 	if err != nil {
 		return false, err
@@ -184,7 +184,7 @@ func GetTotalFollowing(Id int) (int, error) {
 func GetUserById(Id int) (*models.User, error) {
 
 	var user models.User
-	err := initializers.DB.Debug().Where("Id = ?", Id).Find(&user).Error
+	err := initializers.DB.Where("Id = ?", Id).Find(&user).Error
 
 	if err != nil {
 		return nil, err
@@ -194,7 +194,7 @@ func GetUserById(Id int) (*models.User, error) {
 
 func UpdatePassword(hash string, Id int) (bool, error) {
 
-	err := initializers.DB.Debug().Exec("UPDATE users SET password = ? WHERE id = ?", hash, Id).Error
+	err := initializers.DB.Exec("UPDATE users SET password = ? WHERE id = ?", hash, Id).Error
 
 	if err != nil {
 		return false, err
