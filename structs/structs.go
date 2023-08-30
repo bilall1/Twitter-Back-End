@@ -24,3 +24,48 @@ type Password struct {
 	OldPassword string
 	NewPassword string
 }
+type TweetOfUser struct {
+	Email string
+	Page  int
+}
+
+type TweetUser struct {
+	TweetId int
+	UserId  int
+}
+type TweetComment struct {
+	TweetId int
+	UserId  int
+	Content string
+}
+type CommentLimit struct {
+	TweetId int
+	Limit   int
+}
+
+type TweetFollower struct {
+	Id   int
+	Page int
+}
+
+type CommentUser struct {
+	Id           int
+	TweetId      int
+	UserId       int
+	TweetComment string
+	Email        string
+	FirstName    string
+	LastName     string
+	Profile      string
+}
+
+type TweetData struct {
+	Id        int
+	Content   string
+	UserId    int
+	FirstName string
+	LastName  string
+	Email     string
+	Profile   string
+	Link      string
+}

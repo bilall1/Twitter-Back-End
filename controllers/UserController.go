@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"twitter-back-end/models"
-	userService "twitter-back-end/services"
+	services "twitter-back-end/services"
 	"twitter-back-end/structs"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,7 @@ func CreateUser(c *gin.Context) {
 	var body models.User
 	c.Bind(&body)
 
-	userResponse, err := userService.CreateUser(body)
+	userResponse, err := services.CreateUser(body)
 
 	if err != nil {
 		c.Status(400)
@@ -31,7 +31,7 @@ func GetUser(c *gin.Context) {
 	var params models.User
 	c.Bind(&params)
 
-	userResponse, err := userService.GetUser(params.Email)
+	userResponse, err := services.GetUser(params.Email)
 
 	if err != nil {
 		c.Status(400)
@@ -47,7 +47,7 @@ func ValidateUser(c *gin.Context) {
 	var body models.User
 	c.Bind(&body)
 
-	userResponse, err := userService.ValidateUser(body)
+	userResponse, err := services.ValidateUser(body)
 
 	if err != nil {
 		c.Status(400)
@@ -63,7 +63,7 @@ func GetPeopleToFollow(c *gin.Context) {
 	var params models.User
 	c.Bind(&params)
 
-	people, err := userService.GetPeopleToFollow(params.Id)
+	people, err := services.GetPeopleToFollow(params.Id)
 
 	if err != nil {
 		c.Status(400)
@@ -79,7 +79,7 @@ func AddtofollowerList(c *gin.Context) {
 	var body structs.UserFollower
 	c.Bind(&body)
 
-	followerAdded, err := userService.AddtofollowerList(body.UserId, body.FollowerId)
+	followerAdded, err := services.AddtofollowerList(body.UserId, body.FollowerId)
 	if err != nil {
 		c.Status(400)
 		return
@@ -93,7 +93,7 @@ func GetFollowing(c *gin.Context) {
 	var params structs.FollowingPeople
 	c.Bind(&params)
 
-	users, err := userService.GetFollowings(params.Id, params.Page)
+	users, err := services.GetFollowings(params.Id, params.Page)
 	if err != nil {
 		c.Status(400)
 		return
@@ -108,7 +108,7 @@ func DeleteFollower(c *gin.Context) {
 	var body structs.UserFollower
 	c.Bind(&body)
 
-	deleted, err := userService.DeleteFollower(body.UserId, body.FollowerId)
+	deleted, err := services.DeleteFollower(body.UserId, body.FollowerId)
 	if err != nil {
 		c.Status(400)
 		return
@@ -123,7 +123,7 @@ func GetFollowers(c *gin.Context) {
 	var params structs.FollowerPeople
 	c.Bind(&params)
 
-	users, err := userService.GetFollowers(params.Id, params.Page)
+	users, err := services.GetFollowers(params.Id, params.Page)
 	if err != nil {
 		c.Status(400)
 		return
@@ -138,7 +138,7 @@ func UpdateUserData(c *gin.Context) {
 	var body models.User
 	c.Bind(&body)
 
-	isUpdated, err := userService.UpdateUserData(body)
+	isUpdated, err := services.UpdateUserData(body)
 	if err != nil {
 		c.Status(400)
 		return
@@ -153,7 +153,7 @@ func UpdateUserPassword(c *gin.Context) {
 	var body structs.Password
 	c.Bind(&body)
 
-	isUpdated, err := userService.UpdateUserPassword(body.Id, body.OldPassword, body.NewPassword)
+	isUpdated, err := services.UpdateUserPassword(body.Id, body.OldPassword, body.NewPassword)
 	if err != nil {
 		c.Status(400)
 		return
@@ -167,7 +167,7 @@ func AddProfilePicture(c *gin.Context) {
 	var body structs.UserProfile
 	c.Bind(&body)
 
-	isAdded, err := userService.AddProfilePicture(body.Id, body.Link)
+	isAdded, err := services.AddProfilePicture(body.Id, body.Link)
 	if err != nil {
 		c.Status(400)
 		return
@@ -178,10 +178,10 @@ func AddProfilePicture(c *gin.Context) {
 }
 
 func GetTotalFollowers(c *gin.Context) {
-	var body models.User
-	c.Bind(&body)
+	var params models.User
+	c.Bind(&params)
 
-	followersCount, err := userService.GetTotalFollowers(body.Id)
+	followersCount, err := services.GetTotalFollowers(params.Id)
 	if err != nil {
 		c.Status(400)
 		return
@@ -192,10 +192,10 @@ func GetTotalFollowers(c *gin.Context) {
 
 }
 func GetTotalFollowings(c *gin.Context) {
-	var body models.User
-	c.Bind(&body)
+	var params models.User
+	c.Bind(&params)
 
-	followingCount, err := userService.GetTotalFollowings(body.Id)
+	followingCount, err := services.GetTotalFollowings(params.Id)
 	if err != nil {
 		c.Status(400)
 		return
@@ -210,7 +210,7 @@ func GenerateToken(c *gin.Context) {
 	var body models.User
 	c.Bind(&body)
 
-	token, err := userService.GenerateToken(body.Email)
+	token, err := services.GenerateToken(body.Email)
 
 	if err != nil {
 		c.Status(400)

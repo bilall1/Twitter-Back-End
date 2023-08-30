@@ -23,3 +23,9 @@ type UserFollowers struct {
 	UserId    int
 	FolloweId int
 }
+
+type TweetLikes struct {
+	Id      int
+	TweetId int
+	UserId  int
+}

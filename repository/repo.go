@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"twitter-back-end/initializers"
 	"twitter-back-end/models"
+	"twitter-back-end/structs"
 )
 
 func CreateUser(Id int, Email string, Password string, ThirdParty bool, D_o_b string, FirstName string, LastName string) (*models.User, error) {
@@ -193,4 +194,132 @@ func UpdatePassword(hash string, Id int) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+//Tweets
+
+func PostTweet(Content string, Id int, Link string) (*models.Tweet, error) {
+
+	tweet := models.Tweet{Content: Content, UserId: Id, Link: Link, Id: 0}
+	err := initializers.DB.Create(&tweet).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &tweet, nil
+}
+
+func GetTweetsPerPage(Id int, itemsPerPage int, startIndex int) ([]models.Tweet, error) {
+
+	var tweets []models.Tweet
+	err := initializers.DB.Where("user_Id = ?", Id).Order("tweets.id desc").Limit(itemsPerPage).Offset(startIndex).Find(&tweets).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return tweets, nil
+}
+
+func TweetLiked(TweetId int, UserId int) (*models.TweetLikes, error) {
+
+	var likeData models.TweetLikes
+	err := initializers.DB.Raw("SELECT * FROM tweets_likes WHERE tweet_id = ? AND user_id = ?", TweetId, UserId).Scan(&likeData).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &likeData, nil
+}
+
+func LikeTweet(TweetId int, UserId int) (bool, error) {
+	err := initializers.DB.Exec("INSERT INTO tweets_likes ( tweet_id, user_id) VALUES (?, ?)", TweetId, UserId).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func UnLikeTweet(TweetId int, UserId int) (bool, error) {
+	err := initializers.DB.Exec("DELETE FROM tweets_likes WHERE tweet_id = ? AND user_id = ?", TweetId, UserId).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func GetLikesOnTweet(TweetId int) (int, error) {
+	var count int64
+	err := initializers.DB.Raw("SELECT COUNT(*) FROM tweets_likes WHERE tweet_id = ?", TweetId).Scan(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+func SubmitComment(TweetId int, UserId int, Content string) (bool, error) {
+	err := initializers.DB.Exec("INSERT INTO tweets_comments ( tweet_id, user_id,tweet_comment) VALUES (?, ?,?)", TweetId, UserId, Content).Error
+
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func ShowComments(TweetId int, Limit int) ([]structs.CommentUser, error) {
+	var allComments []structs.CommentUser
+	err := initializers.DB.Table("tweets_comments").
+		Select("tweets_comments.id, tweets_comments.tweet_id, tweets_comments.user_id, tweets_comments.tweet_comment, users.email, users.first_name, users.last_name , users.profile").
+		Joins("left join users on tweets_comments.user_id = users.id").
+		Where("tweets_comments.tweet_id = ?", TweetId).
+		Order("tweets_comments.id desc").
+		Limit(Limit).
+		Find(&allComments).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return allComments, nil
+}
+
+func GetCommentsOnTweet(TweetId int) (int, error) {
+	var count int64
+	err := initializers.DB.Raw("SELECT COUNT(*) FROM tweets_comments WHERE tweet_id = ?", TweetId).Scan(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
+}
+
+func UpdateContent(TweetId int, Content string) (bool, error) {
+	err := initializers.DB.Exec("UPDATE tweets SET content = ? WHERE id = ?", Content, TweetId).Error
+
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+func DeleteTweet(TweetId int) (bool, error) {
+	err := initializers.DB.Exec("DELETE FROM tweets WHERE id = ?", TweetId).Error
+
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func GetFollowersTweet(Id int, itemsPerPage int, startIndex int) ([]structs.TweetData, error) {
+	var tweets []structs.TweetData
+	err := initializers.DB.Table("tweets").
+		Joins("LEFT JOIN user_followers ON user_followers.follower_id = tweets.user_id").
+		Joins("LEFT JOIN users ON users.id = tweets.user_id").
+		Where("(user_followers.user_id = ?) OR (tweets.user_id = ?)", Id, Id).
+		Select("tweets.*, users.first_name, users.last_name, users.email, users.profile").
+		Order("tweets.id desc").
+		Limit(itemsPerPage).
+		Offset(startIndex).
+		Find(&tweets).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return tweets, nil
 }

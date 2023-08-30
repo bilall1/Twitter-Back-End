@@ -18,18 +18,18 @@ func init() {
 func main() {
 
 	r := gin.Default()
-
-	//r.Use(cors.Default())
-
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 	corsConfig.AddAllowHeaders("Authorization") // Add "Authorization" header
 	corsConfig.AddAllowHeaders("ThirdParty")    // Add "Authorization" header
-
 	r.Use(cors.New(corsConfig))
 
+	//REST API's
+
 	r.POST("/createUser", controllers.CreateUser)
+
 	r.GET("/getUser", controllers.GetUser)
+
 	r.POST("/postTweet", controllers.AuthenticateJWT, controllers.PostTweet)
 
 	r.GET("/getTweets", controllers.AuthenticateJWT, controllers.GetTweet)
@@ -41,14 +41,17 @@ func main() {
 	r.POST("/addtofollowerList", controllers.AuthenticateJWT, controllers.AddtofollowerList)
 
 	r.GET("getFollowersTweet", controllers.AuthenticateJWT, controllers.GetFollowersTweet)
+
 	r.GET("getFollowing", controllers.AuthenticateJWT, controllers.GetFollowing)
 
 	r.DELETE("deleteFollower", controllers.AuthenticateJWT, controllers.DeleteFollower)
 
 	r.GET("getFollowers", controllers.AuthenticateJWT, controllers.GetFollowers)
+
 	r.GET("getIfTweetLiked", controllers.AuthenticateJWT, controllers.GetIfTweetLiked)
 
 	r.POST("likeTweet", controllers.AuthenticateJWT, controllers.LikeTweet)
+
 	r.POST("unlikeTweet", controllers.AuthenticateJWT, controllers.UnlikeTweet)
 
 	r.GET("getLikesOnTweet", controllers.AuthenticateJWT, controllers.GetLikesOnTweet)
@@ -68,6 +71,7 @@ func main() {
 	r.POST("addProfilePicture", controllers.AuthenticateJWT, controllers.AddProfilePicture)
 
 	r.GET("getTotalFollowers", controllers.AuthenticateJWT, controllers.GetTotalFollowers)
+
 	r.GET("getTotalFollowings", controllers.AuthenticateJWT, controllers.GetTotalFollowings)
 
 	r.PUT("updateUserPassword", controllers.AuthenticateJWT, controllers.UpdateUserPassword) //put

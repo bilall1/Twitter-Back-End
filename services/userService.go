@@ -1,5 +1,5 @@
 // service.go
-package userService
+package services
 
 import (
 	"errors"
