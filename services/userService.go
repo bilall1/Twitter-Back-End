@@ -33,6 +33,11 @@ func ValidateUser(user models.User) (*models.User, error) {
 	}
 }
 
+func FindOtherUsers(Id int) ([]models.User, error) {
+	users, err := repository.FindOtherUsers(Id)
+	return users, err
+}
+
 func GetPeopleToFollow(Id int) ([]models.User, error) {
 
 	peopleList, err := repository.GetFollowersIds(Id)

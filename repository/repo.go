@@ -329,3 +329,50 @@ func GetFollowersTweet(Id int, itemsPerPage int, startIndex int) ([]structs.Twee
 	}
 	return tweets, nil
 }
+
+func SendMessage(sender_id int, reciever_id int, type_of_message string, status string, content string) (bool, error) {
+	err := initializers.DB.Exec("INSERT INTO messages (sender_id, reciever_id,message_type,status,content) VALUES (?, ?,?,?,?)", sender_id, reciever_id, type_of_message, status, content).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+func GetMessages(sender_id int, reciever_id int) ([]models.Message, error) {
+	var messages []models.Message
+	err := initializers.DB.Raw("SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ? UNION SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ?", sender_id, reciever_id, reciever_id, sender_id).Scan(&messages).Error
+	if err != nil {
+		return nil, err
+	}
+	return messages, nil
+}
+
+func GetConversations(userId int) ([]structs.ConversationData, error) {
+	var conversations []structs.ConversationData
+
+	rawSQL := `
+    (SELECT 
+        users.Id as user_id, users.email as user_email, users.first_name as user_first_name, 
+        users.last_name as user_last_name, users.profile as user_profile, conversations.* 
+    FROM conversations
+    INNER JOIN users ON conversations.participant2 = users.id
+    WHERE conversations.participant1 = ?)
+    
+    UNION
+    
+    (SELECT 
+        users.Id as user_id, users.email as user_email, users.first_name as user_first_name, 
+        users.last_name as user_last_name, users.profile as user_profile, conversations.* 
+    FROM conversations
+    INNER JOIN users ON conversations.participant1 = users.id
+    WHERE conversations.participant2 = ?)
+    
+    ORDER BY last_chat DESC
+`
+
+	err := initializers.DB.Raw(rawSQL, userId, userId).Scan(&conversations).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return conversations, nil
+}

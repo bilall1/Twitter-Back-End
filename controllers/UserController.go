@@ -59,6 +59,21 @@ func ValidateUser(c *gin.Context) {
 
 }
 
+func FindOtherUsers(c *gin.Context) {
+	var params models.User
+	c.Bind(&params)
+
+	userResponse, err := services.FindOtherUsers(params.Id)
+	if err != nil {
+		c.Status(400)
+		return
+	}
+	c.JSON(200, gin.H{
+		"user": userResponse,
+	})
+
+}
+
 func GetPeopleToFollow(c *gin.Context) {
 	var params models.User
 	c.Bind(&params)
