@@ -234,3 +234,54 @@ func GenerateToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 
 }
+
+func GetStatus(c *gin.Context) {
+
+	var body models.UserStatus
+	c.Bind(&body)
+
+	status, err := services.GetStatus(body.UserId)
+
+	if err != nil {
+		c.Status(400)
+		return
+	}
+	c.JSON(200, gin.H{
+		"status": status,
+	})
+
+}
+
+func GetOnlineStatus(c *gin.Context) {
+
+	var body models.User
+	c.Bind(&body)
+
+	allUserStatus, err := services.GetOnlineStatus(body.Id)
+
+	if err != nil {
+		c.Status(400)
+		return
+	}
+	c.JSON(200, gin.H{
+		"status": allUserStatus,
+	})
+
+}
+
+func UpdateStatus(c *gin.Context) {
+
+	var params models.UserStatus
+	c.Bind(&params)
+
+	setStatusResponse, err := services.UpdateStatus(params.UserId, params.Status)
+
+	if err != nil {
+		c.Status(400)
+		return
+	}
+	c.JSON(200, gin.H{
+		"status": setStatusResponse,
+	})
+
+}

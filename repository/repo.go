@@ -376,3 +376,66 @@ func GetConversations(userId int) ([]structs.ConversationData, error) {
 	}
 	return conversations, nil
 }
+
+func GetStatus(user_id int) (models.UserStatus, error) {
+	var status models.UserStatus
+	err := initializers.DB.Raw("SELECT * FROM user_status WHERE user_id = ? ", user_id).Scan(&status).Error
+	if err != nil {
+		return status, err
+	}
+	return status, nil
+}
+
+func GetOnlineStatus(user_id int) ([]models.UserStatus, error) {
+
+	var allUserStatus []models.UserStatus
+
+	rawSQL := `
+    (SELECT user_status.*  
+    FROM conversations
+    INNER JOIN user_status ON conversations.participant2 = user_status.user_id
+    WHERE conversations.participant1 = ?)
+    
+    UNION
+    
+    (SELECT user_status.*  
+		FROM conversations
+		INNER JOIN user_status ON conversations.participant1 = user_status.user_id
+		WHERE conversations.participant2 = ?)
+
+`
+
+	err := initializers.DB.Raw(rawSQL, user_id, user_id).Scan(&allUserStatus).Error
+
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(allUserStatus)
+
+	return allUserStatus, nil
+}
+
+func UpdateStatus(user_id int, status string) (bool, error) {
+
+	var count int64
+	errCount := initializers.DB.Raw("SELECT COUNT(*) FROM user_status WHERE user_id = ? ", user_id).Scan(&count).Error
+	if errCount != nil {
+		return false, errCount
+	}
+
+	if count > 0 {
+		err := initializers.DB.Debug().Exec("UPDATE user_status SET status = ? WHERE user_id = ?", status, user_id).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	} else {
+		err := initializers.DB.Debug().Exec("INSERT INTO user_status (user_id, status) VALUES (?, ?)", user_id, status).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+
+	}
+
+}

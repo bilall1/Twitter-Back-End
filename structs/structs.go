@@ -81,3 +81,10 @@ type ConversationData struct {
 	LastChat      string
 	LastMessage   string
 }
+
+type Message struct {
+	SenderId   int
+	RecieverId int
+	Content    string
+	CreatedAt  string
+}

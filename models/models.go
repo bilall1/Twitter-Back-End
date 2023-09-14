@@ -47,3 +47,10 @@ type Conversation struct {
 	LastChat     string
 	LastMessage  string
 }
+
+type UserStatus struct {
+	Id         int
+	UserId     int
+	LastActive string
+	Status     string
+}

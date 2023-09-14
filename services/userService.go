@@ -148,3 +148,18 @@ func GenerateToken(Email string) (string, error) {
 	}
 	return tokenString, nil
 }
+
+func GetStatus(user_id int) (models.UserStatus, error) {
+	status, err := repository.GetStatus(user_id)
+	return status, err
+}
+
+func GetOnlineStatus(user_id int) ([]models.UserStatus, error) {
+	allUserStatus, err := repository.GetOnlineStatus(user_id)
+	return allUserStatus, err
+}
+
+func UpdateStatus(user_id int, status string) (bool, error) {
+	isSet, err := repository.UpdateStatus(user_id, status)
+	return isSet, err
+}
