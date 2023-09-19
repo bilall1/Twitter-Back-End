@@ -1,25 +1,10 @@
 package api
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"twitter-back-end/controllers"
-	"twitter-back-end/structs"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // always allow connections
-	},
-}
-
-var clients = make(map[int]*websocket.Conn)
 
 func HandleApi(r *gin.Engine) {
 
@@ -89,40 +74,5 @@ func HandleApi(r *gin.Engine) {
 
 	r.PUT("updateStatus", controllers.UpdateStatus) //Add authenticate here
 
-	r.GET("/echo", func(c *gin.Context) {
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		if err != nil {
-			fmt.Printf("Failed to upgrade the connection: %v\n", err)
-			return
-		}
-
-		var params struct {
-			Id int
-		}
-		c.Bind(&params)
-
-		clients[params.Id] = conn
-
-		fmt.Println("\n", "Client Connected: ", params.Id)
-
-		for {
-			_, msg, err := conn.ReadMessage()
-			if err != nil {
-				return
-			}
-
-			var receivedMsg structs.Message
-			err = json.Unmarshal(msg, &receivedMsg)
-
-			fmt.Println(receivedMsg)
-
-			recipientConn, ok := clients[receivedMsg.RecieverId]
-			if ok {
-				if err = recipientConn.WriteJSON(receivedMsg); err != nil {
-					fmt.Printf("Error sending message to %d: %v\n", receivedMsg.RecieverId, err)
-				}
-			}
-		}
-
-	})
+	r.GET("/echo", controllers.HandleSocketMessaging) //Add authenticate here
 }

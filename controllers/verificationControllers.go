@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -66,7 +65,7 @@ func AuthenticateJWT(c *gin.Context) {
 
 		}
 		email := payload.Claims["email"]
-		fmt.Println(email)
+		_ = email
 		c.Next()
 
 	}

@@ -419,7 +419,6 @@ func GetOnlineStatus(user_id int) ([]models.UserStatus, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(allUserStatus)
 
 	return allUserStatus, nil
 }
@@ -433,13 +432,13 @@ func UpdateStatus(user_id int, status string) (bool, error) {
 	}
 
 	if count > 0 {
-		err := initializers.DB.Debug().Exec("UPDATE user_status SET status = ? WHERE user_id = ?", status, user_id).Error
+		err := initializers.DB.Exec("UPDATE user_status SET status = ? WHERE user_id = ?", status, user_id).Error
 		if err != nil {
 			return false, err
 		}
 		return true, nil
 	} else {
-		err := initializers.DB.Debug().Exec("INSERT INTO user_status (user_id, status) VALUES (?, ?)", user_id, status).Error
+		err := initializers.DB.Exec("INSERT INTO user_status (user_id, status) VALUES (?, ?)", user_id, status).Error
 		if err != nil {
 			return false, err
 		}
