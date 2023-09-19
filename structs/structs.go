@@ -88,3 +88,9 @@ type Message struct {
 	Content    string
 	CreatedAt  string
 }
+
+type MessagePage struct {
+	Page       int
+	SenderId   int
+	RecieverId int
+}

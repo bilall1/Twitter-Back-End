@@ -12,8 +12,12 @@ func SendMessage(msg models.Message) (bool, error) {
 	return isSent, err
 }
 
-func GetMessages(msg models.Message) ([]models.Message, error) {
-	messageResponse, err := repository.GetMessages(msg.SenderId, msg.RecieverId)
+func GetMessages(msg structs.MessagePage) ([]models.Message, error) {
+
+	itemsPerPage := 10
+	startIndex := (msg.Page - 1) * itemsPerPage
+
+	messageResponse, err := repository.GetMessages(msg.SenderId, msg.RecieverId, itemsPerPage, startIndex)
 	return messageResponse, err
 }
 

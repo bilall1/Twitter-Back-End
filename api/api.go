@@ -87,7 +87,7 @@ func HandleApi(r *gin.Engine) {
 
 	r.GET("getOnlineStatus", controllers.AuthenticateJWT, controllers.GetOnlineStatus)
 
-	r.PUT("updateStatus", controllers.UpdateStatus)
+	r.PUT("updateStatus", controllers.UpdateStatus) //Add authenticate here
 
 	r.GET("/echo", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)

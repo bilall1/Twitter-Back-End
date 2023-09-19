@@ -3,6 +3,7 @@ package controllers
 import (
 	"twitter-back-end/models"
 	"twitter-back-end/services"
+	"twitter-back-end/structs"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +23,7 @@ func SentMessage(c *gin.Context) {
 }
 
 func GetMessages(c *gin.Context) {
-	var params models.Message
+	var params structs.MessagePage
 	c.Bind(&params)
 
 	messageResponse, err := services.GetMessages(params)

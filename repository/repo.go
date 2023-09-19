@@ -337,13 +337,22 @@ func SendMessage(sender_id int, reciever_id int, type_of_message string, status 
 	}
 	return true, nil
 }
-func GetMessages(sender_id int, reciever_id int) ([]models.Message, error) {
+func GetMessages(sender_id int, reciever_id int, itemsPerPage int, startIndex int) ([]models.Message, error) {
 	var messages []models.Message
-	err := initializers.DB.Raw("SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ? UNION SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ?", sender_id, reciever_id, reciever_id, sender_id).Scan(&messages).Error
+	err := initializers.DB.Raw(`
+    SELECT * FROM (
+        (SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ?)
+        UNION
+        (SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ?)
+        ORDER BY created_at DESC LIMIT ? OFFSET ?
+    ) AS subquery 
+    ORDER BY created_at ASC
+`, sender_id, reciever_id, reciever_id, sender_id, itemsPerPage, startIndex).Scan(&messages).Error
 	if err != nil {
 		return nil, err
 	}
 	return messages, nil
+
 }
 
 func GetConversations(userId int) ([]structs.ConversationData, error) {
