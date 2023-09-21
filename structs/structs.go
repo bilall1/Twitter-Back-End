@@ -69,3 +69,28 @@ type TweetData struct {
 	Profile   string
 	Link      string
 }
+type ConversationData struct {
+	UserId        int
+	UserEmail     string
+	UserFirstName string
+	UserLastName  string
+	UserProfile   string
+	Id            int
+	Participant1  int
+	Participant2  int
+	LastChat      string
+	LastMessage   string
+}
+
+type Message struct {
+	SenderId   int
+	RecieverId int
+	Content    string
+	CreatedAt  string
+}
+
+type MessagePage struct {
+	Page       int
+	SenderId   int
+	RecieverId int
+}

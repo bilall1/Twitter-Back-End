@@ -8,186 +8,186 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PostTweet(c *gin.Context) {
+func PostTweet(ctx *gin.Context) {
 	var body models.Tweet
-	c.Bind(&body)
+	ctx.Bind(&body)
 
 	tweetResponse, err := services.PostTweet(body.Content, body.Id, body.Link)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Tweet": tweetResponse,
 	})
 
 }
 
-func GetTweet(c *gin.Context) {
+func GetTweet(ctx *gin.Context) {
 	var params structs.TweetOfUser
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	tweetsResponse, err := services.GetTweet(params.Email, params.Page)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
 	if len(tweetsResponse) == 0 {
-		c.JSON(200, gin.H{
+		ctx.JSON(200, gin.H{
 			"Tweets": []models.Tweet{},
 		})
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Tweets": tweetsResponse,
 	})
 }
 
-func GetFollowersTweet(c *gin.Context) {
+func GetFollowersTweet(ctx *gin.Context) {
 	var params structs.TweetFollower
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	tweetsResponse, err := services.GetFollowersTweet(params.Id, params.Page)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Tweets": tweetsResponse,
 	})
 
 }
 
-func GetIfTweetLiked(c *gin.Context) {
+func GetIfTweetLiked(ctx *gin.Context) {
 	var params structs.TweetUser
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	isLikedResponse, err := services.GetIfTweetLiked(params.TweetId, params.UserId)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Like": isLikedResponse,
 	})
 
 }
 
-func LikeTweet(c *gin.Context) {
+func LikeTweet(ctx *gin.Context) {
 	var body structs.TweetUser
-	c.Bind(&body)
+	ctx.Bind(&body)
 
 	setLikedResponse, err := services.LikeTweet(body.TweetId, body.UserId)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Like": setLikedResponse,
 	})
 
 }
 
-func UnlikeTweet(c *gin.Context) {
+func UnlikeTweet(ctx *gin.Context) {
 	var body structs.TweetUser
-	c.Bind(&body)
+	ctx.Bind(&body)
 
 	setUnLikedResponse, err := services.UnLikeTweet(body.TweetId, body.UserId)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Like": setUnLikedResponse,
 	})
 
 }
 
-func GetLikesOnTweet(c *gin.Context) {
+func GetLikesOnTweet(ctx *gin.Context) {
 	var params structs.TweetUser
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	totalLikesResponse, err := services.GetLikesOnTweet(params.TweetId)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Count": totalLikesResponse,
 	})
 
 }
 
-func SubmitComment(c *gin.Context) {
+func SubmitComment(ctx *gin.Context) {
 	var body structs.TweetComment
-	c.Bind(&body)
+	ctx.Bind(&body)
 
 	setCommentResponse, err := services.SubmitComment(body.TweetId, body.UserId, body.Content)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Comment": setCommentResponse,
 	})
 
 }
 
-func ShowCommentsOnTweet(c *gin.Context) {
+func ShowCommentsOnTweet(ctx *gin.Context) {
 	var params structs.CommentLimit
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	allCommentsResponse, err := services.ShowCommentsOnTweet(params.TweetId, params.Limit)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Comments": allCommentsResponse,
 	})
 
 }
 
-func GetTotalCommentOnTweet(c *gin.Context) {
+func GetTotalCommentOnTweet(ctx *gin.Context) {
 	var params structs.TweetUser
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	totalCommentsResponse, err := services.GetCommentsOnTweet(params.TweetId)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Count": totalCommentsResponse,
 	})
 
 }
 
-func UpdateTweetContent(c *gin.Context) {
+func UpdateTweetContent(ctx *gin.Context) {
 	var params models.Tweet
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	updatedResponse, err := services.UpdateContent(params.Id, params.Content)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"update": updatedResponse,
 	})
 
 }
 
-func DeleteTweet(c *gin.Context) {
+func DeleteTweet(ctx *gin.Context) {
 	var body models.Tweet
-	c.Bind(&body)
+	ctx.Bind(&body)
 
 	deletedResponse, err := services.DeleteTweet(body.Id)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"Deleted": deletedResponse,
 	})
 

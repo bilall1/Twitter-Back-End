@@ -329,3 +329,121 @@ func GetFollowersTweet(Id int, itemsPerPage int, startIndex int) ([]structs.Twee
 	}
 	return tweets, nil
 }
+
+func SendMessage(sender_id int, reciever_id int, type_of_message string, status string, content string) (bool, error) {
+	err := initializers.DB.Exec("INSERT INTO messages (sender_id, reciever_id,message_type,status,content) VALUES (?, ?,?,?,?)", sender_id, reciever_id, type_of_message, status, content).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+func GetMessages(sender_id int, reciever_id int, itemsPerPage int, startIndex int) ([]models.Message, error) {
+	var messages []models.Message
+	err := initializers.DB.Raw(`
+    SELECT * FROM (
+        (SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ?)
+        UNION
+        (SELECT * FROM messages WHERE sender_id = ? AND reciever_id = ?)
+        ORDER BY created_at DESC LIMIT ? OFFSET ?
+    ) AS subquery 
+    ORDER BY created_at ASC
+`, sender_id, reciever_id, reciever_id, sender_id, itemsPerPage, startIndex).Scan(&messages).Error
+	if err != nil {
+		return nil, err
+	}
+	return messages, nil
+
+}
+
+func GetConversations(userId int) ([]structs.ConversationData, error) {
+	var conversations []structs.ConversationData
+
+	rawSQL := `
+    (SELECT 
+        users.Id as user_id, users.email as user_email, users.first_name as user_first_name, 
+        users.last_name as user_last_name, users.profile as user_profile, conversations.* 
+    FROM conversations
+    INNER JOIN users ON conversations.participant2 = users.id
+    WHERE conversations.participant1 = ?)
+    
+    UNION
+    
+    (SELECT 
+        users.Id as user_id, users.email as user_email, users.first_name as user_first_name, 
+        users.last_name as user_last_name, users.profile as user_profile, conversations.* 
+    FROM conversations
+    INNER JOIN users ON conversations.participant1 = users.id
+    WHERE conversations.participant2 = ?)
+    
+    ORDER BY last_chat DESC
+`
+
+	err := initializers.DB.Raw(rawSQL, userId, userId).Scan(&conversations).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return conversations, nil
+}
+
+func GetStatus(user_id int) (models.UserStatus, error) {
+	var status models.UserStatus
+	err := initializers.DB.Raw("SELECT * FROM user_status WHERE user_id = ? ", user_id).Scan(&status).Error
+	if err != nil {
+		return status, err
+	}
+	return status, nil
+}
+
+func GetOnlineStatus(user_id int) ([]models.UserStatus, error) {
+
+	var allUserStatus []models.UserStatus
+
+	rawSQL := `
+    (SELECT user_status.*  
+    FROM conversations
+    INNER JOIN user_status ON conversations.participant2 = user_status.user_id
+    WHERE conversations.participant1 = ?)
+    
+    UNION
+    
+    (SELECT user_status.*  
+		FROM conversations
+		INNER JOIN user_status ON conversations.participant1 = user_status.user_id
+		WHERE conversations.participant2 = ?)
+
+`
+
+	err := initializers.DB.Raw(rawSQL, user_id, user_id).Scan(&allUserStatus).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return allUserStatus, nil
+}
+
+func UpdateStatus(user_id int, status string) (bool, error) {
+
+	var count int64
+	errCount := initializers.DB.Raw("SELECT COUNT(*) FROM user_status WHERE user_id = ? ", user_id).Scan(&count).Error
+	if errCount != nil {
+		return false, errCount
+	}
+
+	if count > 0 {
+		err := initializers.DB.Exec("UPDATE user_status SET status = ? WHERE user_id = ?", status, user_id).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	} else {
+		err := initializers.DB.Exec("INSERT INTO user_status (user_id, status) VALUES (?, ?)", user_id, status).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+
+	}
+
+}

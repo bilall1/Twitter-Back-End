@@ -18,6 +18,8 @@ func HandleApi(r *gin.Engine) {
 
 	r.GET("/validateUser", controllers.AuthenticateJWT, controllers.ValidateUser)
 
+	r.GET("/findOtherUsers", controllers.AuthenticateJWT, controllers.FindOtherUsers)
+
 	r.GET("/getPeopleToFollow", controllers.AuthenticateJWT, controllers.GetPeopleToFollow)
 
 	r.POST("/addtofollowerList", controllers.AuthenticateJWT, controllers.AddtofollowerList)
@@ -60,4 +62,17 @@ func HandleApi(r *gin.Engine) {
 
 	r.GET("generateToken", controllers.GenerateToken)
 
+	r.POST("sentMessage", controllers.AuthenticateJWT, controllers.SentMessage)
+
+	r.GET("getMessages", controllers.AuthenticateJWT, controllers.GetMessages)
+
+	r.GET("getConversations", controllers.AuthenticateJWT, controllers.GetConversations)
+
+	r.GET("getStatus", controllers.AuthenticateJWT, controllers.GetStatus)
+
+	r.GET("getOnlineStatus", controllers.AuthenticateJWT, controllers.GetOnlineStatus)
+
+	r.PUT("updateStatus", controllers.UpdateStatus) //Add authenticate here
+
+	r.GET("/echo", controllers.HandleSocketMessaging) //Add authenticate here
 }

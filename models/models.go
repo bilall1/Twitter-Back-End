@@ -29,3 +29,28 @@ type TweetLikes struct {
 	TweetId int
 	UserId  int
 }
+
+type Message struct {
+	Id          int
+	SenderId    int
+	RecieverId  int
+	MessageType string
+	CreatedAt   string
+	Status      string
+	Content     string
+}
+
+type Conversation struct {
+	Id           int
+	Participant1 int
+	Participant2 int
+	LastChat     string
+	LastMessage  string
+}
+
+type UserStatus struct {
+	Id         int
+	UserId     int
+	LastActive string
+	Status     string
+}

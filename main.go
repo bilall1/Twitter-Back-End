@@ -18,13 +18,15 @@ func init() {
 
 func main() {
 
-	r := gin.Default()
+	r := gin.New()
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
-	corsConfig.AddAllowHeaders("Authorization") // Add "Authorization" header
-	corsConfig.AddAllowHeaders("ThirdParty")    // Add "Authorization" header
+	corsConfig.AddAllowHeaders("Authorization")
+	corsConfig.AddAllowHeaders("ThirdParty")
+
 	r.Use(cors.New(corsConfig))
 
 	api.HandleApi(r)
+
 	r.Run()
 }
