@@ -11,58 +11,58 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SentMessage(c *gin.Context) {
+func SentMessage(ctx *gin.Context) {
 	var body models.Message
-	c.Bind(&body)
+	ctx.Bind(&body)
 
 	isSentResponse, err := services.SendMessage(body)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"sent": isSentResponse,
 	})
 }
 
-func GetMessages(c *gin.Context) {
+func GetMessages(ctx *gin.Context) {
 	var params structs.MessagePage
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	messageResponse, err := services.GetMessages(params)
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"messages": messageResponse,
 	})
 }
 
-func GetConversations(c *gin.Context) {
+func GetConversations(ctx *gin.Context) {
 	var params models.User
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	conversationResponse, err := services.GetConversations(params.Id)
 
 	if err != nil {
-		c.Status(400)
+		ctx.Status(400)
 		return
 	}
-	c.JSON(200, gin.H{
+	ctx.JSON(200, gin.H{
 		"conversations": conversationResponse,
 	})
 }
 
-func HandleSocketMessaging(c *gin.Context) {
+func HandleSocketMessaging(ctx *gin.Context) {
 	messageChannel := make(chan structs.Message)
 	var params struct {
 		Id int
 	}
-	c.Bind(&params)
+	ctx.Bind(&params)
 
 	//Connection
-	conn, err := initializers.Upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := initializers.Upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		fmt.Printf("Failed to upgrade the connection: %v\n", err)
 		return
