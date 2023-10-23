@@ -75,4 +75,6 @@ func HandleApi(r *gin.Engine) {
 	r.PUT("updateStatus", controllers.UpdateStatus) //Add authenticate here
 
 	r.GET("/echo", controllers.HandleSocketMessaging) //Add authenticate here
+
+	r.PUT("updateNotificationToken", controllers.UpdateNotificationToken)
 }

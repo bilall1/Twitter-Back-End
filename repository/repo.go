@@ -447,3 +447,41 @@ func UpdateStatus(user_id int, status string) (bool, error) {
 	}
 
 }
+
+func UpdateNotificationToken(user_id int, token string) (bool, error) {
+
+	var count int64
+	errCount := initializers.DB.Raw("SELECT COUNT(*) FROM user_notification WHERE user_id = ? ", user_id).Scan(&count).Error
+	if errCount != nil {
+		return false, errCount
+	}
+
+	if count > 0 {
+		err := initializers.DB.Exec("UPDATE user_notification SET token = ? WHERE user_id = ?", token, user_id).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	} else {
+		err := initializers.DB.Exec("INSERT INTO user_notification (user_id, token) VALUES (?, ?)", user_id, token).Error
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+
+	}
+
+}
+
+func GetUserNotification(Id int) (*models.UserNotification, error) {
+
+	var user models.UserNotification
+	err := initializers.DB.Raw("SELECT * FROM user_notification WHERE user_id = ?", Id).Scan(&user).Error
+
+	fmt.Println(user)
+
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

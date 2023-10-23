@@ -285,3 +285,20 @@ func UpdateStatus(ctx *gin.Context) {
 	})
 
 }
+
+func UpdateNotificationToken(ctx *gin.Context) {
+
+	var params models.UserNotification
+	ctx.Bind(&params)
+
+	setStatusResponse, err := services.UpdateNotificationToken(params.UserId, params.Token)
+
+	if err != nil {
+		ctx.Status(400)
+		return
+	}
+	ctx.JSON(200, gin.H{
+		"status": setStatusResponse,
+	})
+
+}

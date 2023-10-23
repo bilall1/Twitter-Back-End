@@ -55,6 +55,12 @@ CREATE TABLE User_Status (
 	Status text
 );
 
+CREATE TABLE user_notification (
+	Id serial PRIMARY KEY,
+	user_id int REFERENCES users(Id) ON DELETE CASCADE,
+	token text
+);
+
 
 CREATE OR REPLACE FUNCTION update_or_insert_conversation()
 RETURNS TRIGGER AS $$

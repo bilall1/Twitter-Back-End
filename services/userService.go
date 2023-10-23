@@ -163,3 +163,8 @@ func UpdateStatus(user_id int, status string) (bool, error) {
 	isSet, err := repository.UpdateStatus(user_id, status)
 	return isSet, err
 }
+
+func UpdateNotificationToken(user_id int, token string) (bool, error) {
+	isSet, err := repository.UpdateNotificationToken(user_id, token)
+	return isSet, err
+}

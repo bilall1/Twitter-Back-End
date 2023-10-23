@@ -54,3 +54,9 @@ type UserStatus struct {
 	LastActive string
 	Status     string
 }
+
+type UserNotification struct {
+	Id     int
+	UserId int
+	Token  string
+}
