@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"twitter-back-end/initializers"
 	"twitter-back-end/models"
-	"twitter-back-end/repository"
 	"twitter-back-end/services"
 	"twitter-back-end/structs"
 
-	"firebase.google.com/go/messaging"
 	"github.com/gin-gonic/gin"
 )
 
@@ -92,31 +89,15 @@ func HandleSocketMessaging(ctx *gin.Context) {
 
 		receivedMsg := <-messageChannel
 
-		reviever, err := repository.GetUserNotification(receivedMsg.RecieverId)
-		sender, err := repository.GetUserById(receivedMsg.SenderId)
+		receiver, err := services.GetUserNotification(receivedMsg.RecieverId)
+		sender, err := services.GetUserById(receivedMsg.SenderId)
 
 		recipientConn, ok := initializers.Clients[receivedMsg.RecieverId]
 		if ok {
 			if err = recipientConn.WriteJSON(receivedMsg); err != nil {
 				fmt.Printf("Error sending message to %d: %v\n", receivedMsg.RecieverId, err)
 			}
-
-			message := &messaging.Message{
-				Notification: &messaging.Notification{
-					Title: sender.FirstName + " " + sender.LastName,
-					Body:  receivedMsg.Content,
-				},
-				Token: reviever.Token, // replace with the target device token
-			}
-
-			// Send a message to the desired device.
-			response, err := initializers.Client.Send(context.Background(), message)
-			if err != nil {
-				fmt.Println("Error sending message: %v", err)
-			}
-
-			fmt.Printf("Successfully sent message: %s", response)
-
+			services.SendMessageNotification(sender.FirstName, sender.LastName, receivedMsg.Content, receiver.Token)
 		}
 
 	}()

@@ -478,8 +478,6 @@ func GetUserNotification(Id int) (*models.UserNotification, error) {
 	var user models.UserNotification
 	err := initializers.DB.Raw("SELECT * FROM user_notification WHERE user_id = ?", Id).Scan(&user).Error
 
-	fmt.Println(user)
-
 	if err != nil {
 		return nil, err
 	}

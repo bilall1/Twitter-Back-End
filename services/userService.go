@@ -168,3 +168,13 @@ func UpdateNotificationToken(user_id int, token string) (bool, error) {
 	isSet, err := repository.UpdateNotificationToken(user_id, token)
 	return isSet, err
 }
+
+func GetUserNotification(user_id int) (*models.UserNotification, error) {
+	user, err := repository.GetUserNotification(user_id)
+	return user, err
+}
+
+func GetUserById(user_id int) (*models.User, error) {
+	user, err := repository.GetUserById(user_id)
+	return user, err
+}
